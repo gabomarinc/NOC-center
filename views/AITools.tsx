@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from '../components/ui';
 import { Sparkles, Lightbulb, Bot, TrendingUp, Terminal, FileText, Zap } from 'lucide-react';
@@ -165,7 +166,7 @@ const AITools: React.FC<AIToolsProps> = ({ role }) => {
             <div className="flex items-center justify-between">
                <div className="flex items-center gap-2">
                   <Bot className="h-5 w-5 text-indigo-600" />
-                  <h3 className="font-semibold text-slate-900">External Assistant (GPTMaker)</h3>
+                  <h3 className="font-semibold text-slate-900">External Assistant</h3>
                </div>
                <Badge variant="success" className="bg-emerald-100 text-emerald-700 border-emerald-200 px-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
@@ -175,12 +176,12 @@ const AITools: React.FC<AIToolsProps> = ({ role }) => {
          </CardHeader>
          <div className="bg-white w-full">
             <iframe 
-               src="https://app.gptmaker.ai/widget/3E76F75BD0A222B0634A96DA1F24A670/iframe" 
+               src="https://app.gptmaker.ai/widget/3EB0DDDF8DBDD3F6197E06A5C4F8C192/iframe" 
                width="100%" 
                style={{ height: '100%', minHeight: '700px' }}
                allow="microphone;" 
                frameBorder="0"
-               title="GPTMaker Chatbot"
+               title="AI Assistant Chatbot"
             />
          </div>
       </Card>

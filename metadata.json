@@ -1,5 +1,7 @@
 {
   "name": "NOC Command Center Demo",
-  "description": "A role-based NOC platform demo featuring adaptive dashboards for Leads, Agents, and Clients. Includes simulated AI tools and incident management.",
-  "requestFramePermissions": []
+  "description": "A role-based NOC platform demo featuring adaptive dashboards, Supabase integration, and live AI operations tools.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
 }
