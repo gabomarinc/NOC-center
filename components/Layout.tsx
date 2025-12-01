@@ -27,6 +27,23 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
+  // Cargar widget flotante de GPTMaker en todas las páginas autenticadas (no en Login)
+  useEffect(() => {
+    const src = 'https://app.gptmaker.ai/widget/3EB0DDDF8DBDD3F6197E06A5C4F8C192/float.js';
+    const alreadyLoaded = document.querySelector<HTMLScriptElement>(`script[src="${src}"]`);
+    if (alreadyLoaded) return;
+
+    const script = document.createElement('script');
+    script.src = src;
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      // Al hacer logout desmontamos Layout y retiramos el widget
+      script.remove();
+    };
+  }, []);
+
   // Close search when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
