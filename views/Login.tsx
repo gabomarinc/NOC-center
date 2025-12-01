@@ -3,6 +3,7 @@ import { Activity, ShieldCheck, Users, Briefcase, Lock, ArrowRight, CheckCircle2
 import { UserRole, User } from '../types';
 import { MOCK_USERS } from '../constants';
 import { Button } from '../components/ui';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 interface LoginProps {
   onLogin: (user: User) => void;
@@ -14,20 +15,48 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleLogin = (e?: React.FormEvent) => {
+  const logActivityToSupabase = async (user: User) => {
+    if (!isSupabaseConfigured()) return;
+
+    try {
+      await supabase.from('activity_logs').insert([
+        { 
+          user_id: user.id, 
+          action: 'LOGIN', 
+          details: `User ${user.name} logged in via Web Portal` 
+        }
+      ]);
+      
+      // Also update last_login on users table
+      await supabase.from('users').update({ last_login: new Date() }).eq('id', user.id);
+      
+    } catch (err) {
+      console.warn("Failed to log activity to Supabase", err);
+    }
+  };
+
+  const handleLogin = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setError('');
     setLoading(true);
 
-    // Simulate API network delay
-    setTimeout(() => {
+    // Simulate Auth Process
+    // In a real app, this would query Supabase Auth or the 'users' table directly.
+    // For this demo, we validate against MOCK_USERS but log the success to the DB.
+    
+    setTimeout(async () => {
       // Find user by email (mock auth)
       const foundUserRole = Object.keys(MOCK_USERS).find(
         (key) => MOCK_USERS[key as UserRole].email === email
       ) as UserRole | undefined;
 
       if (foundUserRole && password === 'demo') {
-        onLogin(MOCK_USERS[foundUserRole]);
+        const user = MOCK_USERS[foundUserRole];
+        
+        // Log to Supabase if connected
+        await logActivityToSupabase(user);
+
+        onLogin(user);
       } else {
         setError('Invalid credentials. (Hint: Password is "demo")');
         setLoading(false);

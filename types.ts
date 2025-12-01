@@ -12,6 +12,7 @@ export interface User {
   role: UserRole;
   avatar: string;
   email?: string;
+  lastLogin?: string;
 }
 
 export interface Incident {
@@ -71,4 +72,12 @@ export interface AIConfig {
   apiKey: string;
   model: string;
   temperature: number;
+}
+
+export interface ActivityLog {
+  id: string;
+  userId: string;
+  action: string;
+  details: string;
+  createdAt: string;
 }

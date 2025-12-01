@@ -267,9 +267,13 @@ const Dashboard: React.FC<DashboardProps> = ({ role }) => {
           <h1 className="text-2xl font-bold text-slate-900">
             Operations Overview
           </h1>
-          {loading && <p className="text-xs text-indigo-500 flex items-center gap-1 mt-1"><Loader2 className="h-3 w-3 animate-spin"/> Syncing live data...</p>}
+          {loading ? (
+             <p className="text-xs text-indigo-500 flex items-center gap-1 mt-1"><Loader2 className="h-3 w-3 animate-spin"/> Syncing live data...</p>
+          ) : (
+             <p className="text-xs text-slate-500 mt-1">Status: Online • {new Date().toLocaleTimeString()}</p>
+          )}
         </div>
-        <div className="text-sm text-slate-500">Last updated: Just now</div>
+        <div className="text-sm text-slate-500"></div>
       </div>
 
       {/* Metrics Grid */}
