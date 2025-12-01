@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { UserRole, TeamMember } from '../types';
-import { MOCK_TEAM, MOCK_PLAYBOOKS } from '../constants';
+import { useData } from '../hooks/useData';
 import { Card, CardContent, CardHeader, CardTitle, Badge, Button, Tooltip } from '../components/ui';
-import { Users, Search, BookOpen, GitMerge, Phone, MoreHorizontal, X, CheckCircle2, Clock, AlertCircle, Briefcase, BarChart3, ArrowUpRight, Sparkles, MapPin, Globe, TrendingUp, BrainCircuit, Loader2, Check } from 'lucide-react';
+import { Search, BookOpen, GitMerge, Phone, MoreHorizontal, X, CheckCircle2, Clock, Briefcase, BarChart3, ArrowUpRight, Sparkles, MapPin, Globe, BrainCircuit, Loader2, Check, Database } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 
 interface TeamProps {
@@ -10,6 +11,7 @@ interface TeamProps {
 }
 
 const Team: React.FC<TeamProps> = ({ role }) => {
+  const { team, playbooks, loading, source } = useData();
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [playbookStatus, setPlaybookStatus] = useState<Record<string, 'IDLE' | 'RUNNING' | 'COMPLETED'>>({});
 
@@ -77,17 +79,24 @@ const Team: React.FC<TeamProps> = ({ role }) => {
 
   const memberDetails = selectedMember ? getMemberDetails(selectedMember) : null;
 
+  if (loading) {
+    return <div className="flex justify-center p-10"><Loader2 className="animate-spin h-8 w-8 text-indigo-500" /></div>;
+  }
+
   return (
     <div className="space-y-6 relative">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">
-          {role === UserRole.LEAD ? 'Team & Resources Console' : 'Knowledge Base & Escalation'}
-        </h1>
-        <p className="text-sm text-slate-500">
-          {role === UserRole.LEAD 
-            ? 'Monitor team availability, shift status, and workload.' 
-            : 'Access Standard Operating Procedures (SOPs) and escalation paths.'}
-        </p>
+      <div className="flex justify-between items-end">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+            {role === UserRole.LEAD ? 'Team & Resources Console' : 'Knowledge Base & Escalation'}
+            {source === 'SUPABASE' && <Badge variant="outline" className="text-[10px] font-normal gap-1"><Database className="h-3 w-3" /> Live</Badge>}
+          </h1>
+          <p className="text-sm text-slate-500">
+            {role === UserRole.LEAD 
+              ? 'Monitor team availability, shift status, and workload.' 
+              : 'Access Standard Operating Procedures (SOPs) and escalation paths.'}
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -101,11 +110,11 @@ const Team: React.FC<TeamProps> = ({ role }) => {
                 <CardTitle>Active Agents</CardTitle>
                 <div className="flex items-center space-x-2">
                   <span className="flex h-2 w-2 rounded-full bg-emerald-500"></span>
-                  <span className="text-xs text-slate-500">3 Online</span>
+                  <span className="text-xs text-slate-500">{team.filter(t => t.status === 'ONLINE').length} Online</span>
                 </div>
               </CardHeader>
               <div className="divide-y divide-slate-100">
-                {MOCK_TEAM.map((member) => (
+                {team.length > 0 ? team.map((member) => (
                   <div 
                     key={member.id} 
                     className="p-4 flex items-center justify-between hover:bg-slate-50 cursor-pointer transition-colors group/item"
@@ -148,7 +157,9 @@ const Team: React.FC<TeamProps> = ({ role }) => {
                       </button>
                     </div>
                   </div>
-                ))}
+                )) : (
+                  <div className="p-4 text-center text-sm text-slate-500">No active team members found.</div>
+                )}
               </div>
             </Card>
           )}
@@ -166,7 +177,7 @@ const Team: React.FC<TeamProps> = ({ role }) => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {MOCK_PLAYBOOKS.map((pb) => (
+                {playbooks.length > 0 ? playbooks.map((pb) => (
                   <div key={pb.id} className="border border-slate-200 rounded-lg p-4 hover:border-indigo-300 transition-colors cursor-pointer group">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center space-x-3">
@@ -211,7 +222,9 @@ const Team: React.FC<TeamProps> = ({ role }) => {
                       </div>
                     </div>
                   </div>
-                ))}
+                )) : (
+                  <div className="p-4 text-center text-sm text-slate-500">No playbooks found.</div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -509,7 +522,7 @@ const Team: React.FC<TeamProps> = ({ role }) => {
                 <div className="space-y-2 pt-2">
                    <h3 className="font-semibold text-slate-900 text-sm">Skills & Certifications</h3>
                    <div className="flex flex-wrap gap-2">
-                      {selectedMember.skills.map(skill => (
+                      {(selectedMember.skills || []).map(skill => (
                          <span key={skill} className="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-medium border border-slate-200">
                             {skill}
                          </span>

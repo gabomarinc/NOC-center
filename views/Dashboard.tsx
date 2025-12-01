@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { UserRole } from '../types';
 import { MOCK_METRICS, MOCK_CHART_DATA, MOCK_CLIENT_SERVICES, MOCK_CLIENT_REGIONS } from '../constants';
+import { useData } from '../hooks/useData';
 import { Card, CardContent, CardHeader, CardTitle, Badge, Tooltip } from '../components/ui';
-import { TrendingUp, TrendingDown, Minus, Clock, CheckCircle2, AlertTriangle, ShieldCheck, Globe, Activity, Server, Zap, AlertCircle, BarChart3, Users } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Clock, CheckCircle2, AlertTriangle, ShieldCheck, Globe, Activity, Server, Zap, AlertCircle, BarChart3, Users, Loader2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area } from 'recharts';
 
 interface DashboardProps {
@@ -11,7 +12,41 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ role }) => {
-  const metrics = MOCK_METRICS[role];
+  // Connect to Data Layer (Supabase or Mock)
+  const { incidents, team, loading } = useData();
+
+  // --- Dynamic Metrics Calculation ---
+  const dynamicMetrics = useMemo(() => {
+    // Clone defaults
+    const metrics = [...MOCK_METRICS[role]];
+
+    // If loading or no data, return defaults
+    if (loading) return metrics;
+
+    // Calculate Real-time Counts based on fetched Incidents
+    const criticalCount = incidents.filter(i => i.severity === 'CRITICAL' && i.status !== 'RESOLVED').length;
+    const openCount = incidents.filter(i => i.status === 'OPEN').length;
+    const resolvedToday = incidents.filter(i => i.status === 'RESOLVED').length; // Simplified for demo
+    
+    // Calculate Team Stats
+    const onlineAgents = team.filter(t => t.status === 'ONLINE').length;
+    const teamLoadAvg = team.length > 0 ? Math.round(team.reduce((acc, curr) => acc + curr.load, 0) / team.length) : 0;
+
+    if (role === UserRole.LEAD) {
+       // Update 'Critical Incidents'
+       metrics[1] = { ...metrics[1], value: criticalCount, trend: criticalCount > 0 ? 'up' : 'down' };
+       // Update 'Team Load'
+       metrics[0] = { ...metrics[0], value: `${teamLoadAvg}%`, trend: teamLoadAvg > 80 ? 'up' : 'neutral' };
+    } else if (role === UserRole.AGENT) {
+       // Update 'My Open Tickets' (Simulated as global open for demo)
+       metrics[0] = { ...metrics[0], value: openCount };
+       // Update 'Tasks Completed'
+       metrics[2] = { ...metrics[2], value: resolvedToday };
+    }
+
+    return metrics;
+  }, [role, incidents, team, loading]);
+
 
   // --- CLIENT DASHBOARD: Executive Command Center ---
   if (role === UserRole.CLIENT) {
@@ -42,7 +77,7 @@ const Dashboard: React.FC<DashboardProps> = ({ role }) => {
 
         {/* 2. Key Business Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {metrics.map((metric, idx) => (
+          {dynamicMetrics.map((metric, idx) => (
             <Card key={idx} className="border-l-4 border-l-indigo-500">
               <CardContent className="p-4">
                 <div className="flex justify-between items-start">
@@ -228,15 +263,18 @@ const Dashboard: React.FC<DashboardProps> = ({ role }) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900">
-          Operations Overview
-        </h1>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">
+            Operations Overview
+          </h1>
+          {loading && <p className="text-xs text-indigo-500 flex items-center gap-1 mt-1"><Loader2 className="h-3 w-3 animate-spin"/> Syncing live data...</p>}
+        </div>
         <div className="text-sm text-slate-500">Last updated: Just now</div>
       </div>
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {metrics.map((metric, idx) => (
+        {dynamicMetrics.map((metric, idx) => (
           <Card key={idx}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">

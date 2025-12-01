@@ -235,7 +235,7 @@ const Reports: React.FC<ReportsProps> = ({ role = UserRole.LEAD }) => {
                              fill="#6366f1"
                              fillOpacity={0.5}
                           />
-                          <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                          <RechartsTooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
                        </RadarChart>
                     </ResponsiveContainer>
                  </div>
